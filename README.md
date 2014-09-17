@@ -4,7 +4,7 @@ mixtape-scripts
 Scripts for working with [Mixtape](https://github.com/rmcgibbo/mdtraj) projects
 
 
-`mixtape-convert-chunked-project`
+mixtape-convert-chunked-project
 ---------------------------------
 
 ```
