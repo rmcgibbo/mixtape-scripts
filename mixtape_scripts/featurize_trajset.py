@@ -10,7 +10,7 @@ from mdtraj.utils import timing
 from joblib import dump
 from mixtape.featurizer import (DihedralFeaturizer, ContactFeaturizer,
                                 KappaAngleFeaturizer)
-from .util import tee_outstream_to_file
+from .util import tee_outstream_to_file, print_datetime
 
 # Unbuffer output
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
@@ -67,6 +67,8 @@ def parse_args():
     parser.add_argument('--trajglob', help='Glob pattern for trajectories to '
                         'load (example: \'trajectories/*.xtc\'). Required.',
                         required=True)
+    parser.add_argument('--stride', type=int, help='Load every stride-th '
+                        'frame from the trajectorys. default=1', default=1)
     parser.add_argument('--log', help='Path to log file to save flat-text '
                         'logging output. Optional')
 
@@ -79,6 +81,8 @@ def main():
     args = parse_args()
     if args.log is not None:
         tee_outstream_to_file(args.log)
+    print_datetime()
+
     if not os.path.exists(args.outdir):
         os.makedirs(args.outdir)
 
@@ -92,15 +96,18 @@ def main():
 
     for fn in infiles:
         print()
-        process_single_traj(fn, args.topology, args.outdir)
+        process_single_traj(fn, args.topology, args.stride, args.outdir)
+
+    print_datetime()
+    print('Finished sucessfully!')
 
 
-def process_single_traj(fn, topology, outdir):
+def process_single_traj(fn, topology, stride, outdir):
     traj = None
 
     def load():
         with timing('loading %s' % fn):
-            t = md.load(fn, top=topology)
+            t = md.load(fn, stride=stride, top=topology)
         print('Number of frames: %d' % t.n_frames)
         return t
 

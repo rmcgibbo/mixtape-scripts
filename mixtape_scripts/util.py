@@ -1,5 +1,7 @@
+from __future__ import print_function
 import os
 import sys
+from datetime import datetime
 import subprocess
 
 def keynat(string):
@@ -23,6 +25,10 @@ def keynat(string):
         except:
             r.append(c)
     return r
+
+def print_datetime(file=sys.stdout)
+    print('Currently: %s' % datetime.now().strftime('%b %d %Y %H:%M:%S'),
+          file=sys.stdout)
 
 
 def tee_outstream_to_file(outfile):
