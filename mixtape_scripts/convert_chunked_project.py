@@ -6,7 +6,7 @@ import json
 import argparse
 import traceback
 from fnmatch import fnmatch
-from .util import keynat
+from .util import keynat, tee_outstream_to_file
 
 import mdtraj as md
 from mdtraj.formats.registry import _FormatRegistry
@@ -87,7 +87,9 @@ def parse_args():
                         '.prmtop / .psf)', required=True)
     parser.add_argument('--dry-run', help='Trace the execution, without '
                         'actually running any actions', action='store_true')
-    
+    parser.add_argument('--log', help='Path to log file to save flat-text '
+                        'logging output. Optional')
+
     parser.parse_args()
     args = parser.parse_args()
 
@@ -113,6 +115,8 @@ def parse_args():
 
 def main():
     args = parse_args()
+    if args.log is not None:
+        tee_outstream_to_file(args.log)
 
     if os.path.exists(args.metadata):
         with open(args.metadata) as f:

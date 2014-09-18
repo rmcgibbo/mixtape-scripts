@@ -1,3 +1,6 @@
+import sys
+import subprocess
+
 def keynat(string):
     '''A natural sort helper function for sort() and sorted()
     without using regular expression.
@@ -19,3 +22,12 @@ def keynat(string):
         except:
             r.append(c)
     return r
+
+
+def tee_outstream_to_file(outfile):
+    # http://stackoverflow.com/a/651718/1079728
+    so = se = open(outfile, 'w', 0)
+
+    tee = subprocess.Popen(["tee", outfile], stdin=subprocess.PIPE)
+    os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
+    os.dup2(tee.stdin.fileno(), sys.stderr.fileno())

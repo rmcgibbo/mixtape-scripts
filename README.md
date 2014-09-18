@@ -5,9 +5,9 @@ Scripts for working with [Mixtape](https://github.com/rmcgibbo/mdtraj) projects
 
 
 mixtape-convert-chunked-project
----------------------------------
-
+-------------------------------
 ```
+$ mixtape-convert-chunked-project  --help
 usage: mixtape-convert-chunked-project [-h] [--outfmt OUTFMT] --pattern
                                        PATTERN --metadata METADATA
                                        [--discard-first] --topology TOPOLOGY
@@ -59,4 +59,52 @@ optional arguments:
   --topology TOPOLOGY  Path to system topology file (.pdb / .prmtop / .psf)
   --dry-run            Trace the execution, without actually running any
                        actions
+  --log LOG            Path to log file to save flat-text logging output.
+                       Optional
+```
+
+
+mixtape-featurize-trajset
+-------------------------
+```
+$ mixtape-featurize-trajset  --help
+usage: mixtape-featurize-trajset [-h] --topology TOPOLOGY --trjglob TRJGLOB
+                                 [--log LOG]
+                                 outdir
+
+---------------------------------------------------------
+Featurize a collection of trajectories.
+
+Loads each trajectory matching a user-specified glob pattern,
+and passes it through each of the configured (explicitly
+enumerated in this file). The output from each featurizer,
+a 2D numpy array of shape (length_of_trajectory, n_features)
+is saved in a user-specified output directory, under a filename
+constructed from the basename of the trajectory and a
+featurizer-specific extension.
+
+Featurizers
+-----------
+[{'featurizer': DihedralFeaturizer(sincos=True,
+          types=['phi', 'psi', 'omega', 'chi1', 'chi2', 'chi3', 'chi4']),
+  'suffix': '-dihedrals-ppoc1c2c3c4.pkl'},
+ {'featurizer': ContactFeaturizer(contacts='all', ignore_nonprotein=True, scheme='ca'),
+  'suffix': '-contacts-all-ca.pkl'}]
+
+Refer to the Mixtape documentation for a description of
+these featurizers.
+---------------------------------------------------------
+
+positional arguments:
+  outdir               Output directory in which to save features.
+                       default="features/
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --topology TOPOLOGY  Path to system topology file (.pdb / .prmtop / .psf).
+                       Required.
+  --trajglob TRJGLOB    Glob pattern for trajectories to load (example:
+                       'trajectories/*.xtc'). Required.
+  --log LOG            Path to log file to save flat-text logging output.
+                       Optional
 ```
