@@ -8,8 +8,8 @@ from pprint import pprint, pformat
 import mdtraj as md
 from mdtraj.utils import timing
 from joblib import dump
-from mixtape.featurizer import DihedralFeaturizer, ContactFeaturizer
-
+from mixtape.featurizer import (DihedralFeaturizer, ContactFeaturizer,
+                                KappaAngleFeaturizer)
 from .util import tee_outstream_to_file
 
 # Unbuffer output
@@ -24,7 +24,9 @@ FEATURIZERS = [
             sincos=True),
      'suffix': '-dihedrals-ppoc1c2c3c4.pkl'},
     {'featurizer': ContactFeaturizer(contacts='all', scheme='ca'),
-     'suffix': '-contacts-all-ca.pkl'}
+     'suffix': '-contacts-all-ca.pkl'},
+    {'featurizer': KappaAngleFeaturizer(cos=True),
+     'suffix': '-kappas.pkl'},
 ]
 
 #############################################################################
