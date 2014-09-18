@@ -19,6 +19,10 @@ sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 #############################################################################
 
 FEATURIZERS = [
+    {'featurizer': DihedralFeaturizer(['phi', 'psi'], sincos=True),
+     'suffix': '-dihedrals-pp.pkl'},
+    {'featurizer': DihedralFeaturizer(['phi', 'psi', 'chi1'], sincos=True),
+     'suffix': '-dihedral-ppc1.pkl'},
     {'featurizer': DihedralFeaturizer(
             ['phi', 'psi', 'omega', 'chi1', 'chi2', 'chi3', 'chi4'],
             sincos=True),
