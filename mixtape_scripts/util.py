@@ -1,8 +1,9 @@
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 import os
 import sys
 from datetime import datetime
 import subprocess
+
 
 def keynat(string):
     '''A natural sort helper function for sort() and sorted()
@@ -26,7 +27,8 @@ def keynat(string):
             r.append(c)
     return r
 
-def print_datetime(file=sys.stdout)
+
+def print_datetime(file=sys.stdout):
     print('Currently: %s' % datetime.now().strftime('%b %d %Y %H:%M:%S'),
           file=sys.stdout)
 
