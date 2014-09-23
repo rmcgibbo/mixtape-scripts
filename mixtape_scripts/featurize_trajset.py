@@ -6,11 +6,11 @@ import argparse
 from pprint import pprint, pformat
 
 import mdtraj as md
-from mdtraj.utils import timing
 from joblib import dump
 from mixtape.featurizer import (DihedralFeaturizer, ContactFeaturizer,
                                 KappaAngleFeaturizer)
-from .util import tee_outstream_to_file, print_datetime
+from .util import (tee_outstream_to_file, print_script_header, timing,
+                   print_datetime)
 
 # Unbuffer output
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
@@ -54,8 +54,15 @@ Featurizers
 Refer to the Mixtape documentation for a description of
 these featurizers.
 ---------------------------------------------------------
-''' % pformat(FEATURIZERS)
+''' % pformat(list(enumerate(FEATURIZERS)))
 
+def commalist(type):
+    def inner(s):
+        try:
+            return map(type, s.split(','))
+        except:
+            raise argparse.ArgumentTypeError('must be a comma separated list of ints')
+    return inner
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__,
@@ -71,7 +78,11 @@ def parse_args():
                         'frame from the trajectorys. default=1', default=1)
     parser.add_argument('--log', help='Path to log file to save flat-text '
                         'logging output. Optional')
-
+    parser.add_argument('--feats', type=commalist(int), help='Which featurizers to use? '
+                        'Specify a comma separated list of ints, corresponding to '
+                        'the indices of the selected featurizers. default=\'%s\'' %
+                        ','.join(map(str, range(len(FEATURIZERS)))),
+                        default=range(len(FEATURIZERS)))
     args = parser.parse_args()
     args.topology = md.core.trajectory._parse_topology(args.topology)
     return args
@@ -81,28 +92,30 @@ def main():
     args = parse_args()
     if args.log is not None:
         tee_outstream_to_file(args.log)
-    print_datetime()
+    print_script_header()
 
     if not os.path.exists(args.outdir):
         os.makedirs(args.outdir)
 
-    infiles = sorted(glob.glob(args.trajglob))
+    infiles = sorted(glob.glob(os.path.expanduser(args.trajglob)))
+    featurizers = [FEATURIZERS[i] for i in args.feats]
 
     print('-' * 60)
     print('Matched %d input trajectories' % len(infiles))
-    print('Featurizers:')
-    pprint(FEATURIZERS)
+    print('Active featurizers:')
+    pprint(featurizers)
     print('-' * 60)
 
     for fn in infiles:
         print()
-        process_single_traj(fn, args.topology, args.stride, args.outdir)
+        process_single_traj(fn, args.topology, args.stride, args.outdir, featurizers)
 
+    print()
     print_datetime()
     print('Finished sucessfully!')
 
 
-def process_single_traj(fn, topology, stride, outdir):
+def process_single_traj(fn, topology, stride, outdir, featurizers):
     traj = None
 
     def load():
@@ -111,7 +124,7 @@ def process_single_traj(fn, topology, stride, outdir):
         print('Number of frames: %d' % t.n_frames)
         return t
 
-    for f in FEATURIZERS:
+    for f in featurizers:
         featurizer = f['featurizer']
         outfile = construct_outfile(fn, f['suffix'], outdir)
         if os.path.exists(outfile):

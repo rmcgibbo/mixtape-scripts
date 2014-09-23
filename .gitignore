@@ -52,3 +52,4 @@ docs/_build/
 
 # PyBuilder
 target/
+mixtape_scripts/version.py
