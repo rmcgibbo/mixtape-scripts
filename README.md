@@ -67,9 +67,9 @@ optional arguments:
 mixtape-featurize-trajset
 -------------------------
 ```
-$ mixtape-featurize-trajset  --help
-usage: mixtape-featurize-trajset [-h] --topology TOPOLOGY --trjglob TRJGLOB
-                                 [--log LOG]
+$ mixtape-featurize-trajset --help
+usage: mixtape-featurize-trajset [-h] --topology TOPOLOGY --trajglob TRAJGLOB
+                                 [--stride STRIDE] [--log LOG] [--feats FEATS]
                                  outdir
 
 ---------------------------------------------------------
@@ -85,11 +85,20 @@ featurizer-specific extension.
 
 Featurizers
 -----------
-[{'featurizer': DihedralFeaturizer(sincos=True,
+[(0,
+  {'featurizer': DihedralFeaturizer(sincos=True, types=['phi', 'psi']),
+   'suffix': '-dihedrals-pp.pkl'}),
+ (1,
+  {'featurizer': DihedralFeaturizer(sincos=True, types=['phi', 'psi', 'chi1']),
+   'suffix': '-dihedral-ppc1.pkl'}),
+ (2,
+  {'featurizer': DihedralFeaturizer(sincos=True,
           types=['phi', 'psi', 'omega', 'chi1', 'chi2', 'chi3', 'chi4']),
-  'suffix': '-dihedrals-ppoc1c2c3c4.pkl'},
- {'featurizer': ContactFeaturizer(contacts='all', ignore_nonprotein=True, scheme='ca'),
-  'suffix': '-contacts-all-ca.pkl'}]
+   'suffix': '-dihedrals-ppoc1c2c3c4.pkl'}),
+ (3,
+  {'featurizer': ContactFeaturizer(contacts='all', ignore_nonprotein=True, scheme='ca'),
+   'suffix': '-contacts-all-ca.pkl'}),
+ (4, {'featurizer': KappaAngleFeaturizer(cos=True), 'suffix': '-kappas.pkl'})]
 
 Refer to the Mixtape documentation for a description of
 these featurizers.
@@ -103,8 +112,13 @@ optional arguments:
   -h, --help           show this help message and exit
   --topology TOPOLOGY  Path to system topology file (.pdb / .prmtop / .psf).
                        Required.
-  --trajglob TRJGLOB    Glob pattern for trajectories to load (example:
+  --trajglob TRAJGLOB  Glob pattern for trajectories to load (example:
                        'trajectories/*.xtc'). Required.
+  --stride STRIDE      Load every stride-th frame from the trajectorys.
+                       default=1
   --log LOG            Path to log file to save flat-text logging output.
                        Optional
+  --feats FEATS        Which featurizers to use? Specify a comma separated
+                       list of ints, corresponding to the indices of the
+                       selected featurizers. default='0,1,2,3,4'
 ```
