@@ -6,7 +6,8 @@ import json
 import argparse
 import traceback
 from fnmatch import fnmatch
-from .util import keynat, tee_outstream_to_file
+from .util import (keynat, tee_outstream_to_file, print_script_header,
+                   print_datetime, timing)
 
 import mdtraj as md
 from mdtraj.formats.registry import _FormatRegistry
@@ -35,7 +36,7 @@ dataset, this is the WRONG script for you.]
 The concatenated trajectory will be saved to disk inside the ``outdir``
 directory, under a filename set by the ``outfmt`` format string.
 
-A record of conversion will be saved inside the ``metadata`` JSON Lines file 
+A record of conversion will be saved inside the ``metadata`` JSON Lines file
 [http://jsonlines.org/], which contains a newline-delimited collection of
 JSON records, each of which is of the form
 
@@ -78,13 +79,14 @@ def parse_args():
                         'chunks (example: \'frame*.xtc\'). Use single quotes '
                         'to specify expandable patterns', required=True)
     parser.add_argument('--metadata', help='Path to metadata file. default="trajectories.jsonl"',
-                        required=True, default='trajectories.json')
+                        default='trajectories.json')
     parser.add_argument('--discard-first', help='Flag to discard the initial frame '
                         'in each chunk before concatenating trajectories. This '
                         'is necessary for some old-style Folding@Home datasets',
                         action='store_true')
     parser.add_argument('--topology', help='Path to system topology file (.pdb / '
-                        '.prmtop / .psf)', required=True)
+                        '.prmtop / .psf)', type=md.core.trajectory._parse_topology,
+                        required=True)
     parser.add_argument('--dry-run', help='Trace the execution, without '
                         'actually running any actions', action='store_true')
     parser.add_argument('--log', help='Path to log file to save flat-text '
@@ -101,22 +103,14 @@ def parse_args():
     except TypeError:
         parser.error('"%s" is not a valid string format. It should contain '
                     'a single %%d specifier' % args.outfmt)
-
-    return argparse.Namespace(
-        root=args.root,
-        outdir=args.outdir,
-        outfmt=args.outfmt,
-        pattern=args.pattern,
-        metadata=args.metadata,
-        discard_first=args.discard_first,
-        top=md.core.trajectory._parse_topology(args.topology),
-        dry_run=args.dry_run)
+    return args
 
 
 def main():
     args = parse_args()
     if args.log is not None:
         tee_outstream_to_file(args.log)
+    print_script_header()
 
     if os.path.exists(args.metadata):
         with open(args.metadata) as f:
@@ -129,10 +123,9 @@ def main():
             print('Skipping %s. Already processed' % os.path.dirname(chunk_fns[0]))
             continue
 
-        print('Loading %s: %d files...' % (os.path.dirname(chunk_fns[0]), len(chunk_fns)))
-              
         try:
-            traj = load_chunks(chunk_fns, args.top, discard_first=args.discard_first)
+            with timing('Loading %s: %d files' % (os.path.dirname(chunk_fns[0]), len(chunk_fns))):
+                traj = load_chunks(chunk_fns, args.topology, discard_first=args.discard_first)
         except ValueError:
             print('======= Error loading chunks! Skipping ==========', file=sys.stderr)
             print('-' * 60)
@@ -157,6 +150,10 @@ def main():
             with open(args.metadata, 'a') as f:
                 json.dump(metadata_item, f)
                 f.write('\n')
+
+    print()
+    print_datetime()
+    print('Finished sucessfully!')
 
 
 if __name__ == '__main__':
