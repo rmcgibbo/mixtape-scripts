@@ -75,7 +75,7 @@ def parse_args():
                         'load (example: \'trajectories/*.xtc\'). Required.',
                         required=True)
     parser.add_argument('--stride', type=int, help='Load every stride-th '
-                        'frame from the trajectorys. default=1', default=1)
+                        'frame from the trajectories. default=1', default=1)
     parser.add_argument('--log', help='Path to log file to save flat-text '
                         'logging output. Optional')
     parser.add_argument('--feats', type=commalist(int), help='Which featurizers to use? '

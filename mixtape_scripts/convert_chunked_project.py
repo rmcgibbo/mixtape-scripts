@@ -51,10 +51,10 @@ def walk_project(root, pattern):
             yield tuple(filenames)
 
 
-def load_chunks(chunk_fns, top, discard_first=True):
+def load_chunks(chunk_fns, top, stride, discard_first=True):
     trajectories = []
     for fn in chunk_fns:
-        t = md.load(fn, top=top)
+        t = md.load(fn, stride=stride, top=top)
         if discard_first:
             t = t[1:]
         trajectories.append(t)
@@ -84,6 +84,8 @@ def parse_args():
                         'in each chunk before concatenating trajectories. This '
                         'is necessary for some old-style Folding@Home datasets',
                         action='store_true')
+    parser.add_argument('--stride', type=int, help='Convert every stride-th '
+                        'frame from the trajectories. default=1', default=1)
     parser.add_argument('--topology', help='Path to system topology file (.pdb / '
                         '.prmtop / .psf)', type=md.core.trajectory._parse_topology,
                         required=True)
@@ -125,8 +127,10 @@ def main():
 
         try:
             with timing('Loading %s: %d files' % (os.path.dirname(chunk_fns[0]), len(chunk_fns))):
-                traj = load_chunks(chunk_fns, args.topology, discard_first=args.discard_first)
-        except ValueError, RuntimeError:
+                traj = load_chunks(chunk_fns, args.topology,
+                                   args.stride,
+                                   discard_first=args.discard_first)
+        except (ValueError, RuntimeError):
             print('======= Error loading chunks! Skipping ==========', file=sys.stderr)
             print('-' * 60)
             traceback.print_exc(file=sys.stderr)
