@@ -126,7 +126,7 @@ def main():
         try:
             with timing('Loading %s: %d files' % (os.path.dirname(chunk_fns[0]), len(chunk_fns))):
                 traj = load_chunks(chunk_fns, args.topology, discard_first=args.discard_first)
-        except ValueError:
+        except ValueError, RuntimeError:
             print('======= Error loading chunks! Skipping ==========', file=sys.stderr)
             print('-' * 60)
             traceback.print_exc(file=sys.stderr)
